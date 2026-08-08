@@ -54,8 +54,8 @@
   .arena::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,10,31,.35),rgba(13,10,31,.75))}
   .fighter{position:relative;z-index:1;text-align:center;width:42%;display:flex;flex-direction:column;align-items:center}
   /* sprite layer: only THIS moves/animates, stats stay put below */
-  .sprite{position:relative;width:100%;display:flex;justify-content:center;align-items:flex-end;min-height:170px}
-  .sprite img{height:170px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(124,92,255,.55));animation:bob 3s ease-in-out infinite}
+  .sprite{position:relative;width:100%;display:flex;justify-content:center;align-items:flex-end;min-height:180px;max-height:200px}
+  .sprite img{max-height:190px;width:auto;object-fit:contain;filter:drop-shadow(0 0 14px rgba(124,92,255,.55));animation:bob 3s ease-in-out infinite}
   .fighter.enemy .sprite img{transform:scaleX(-1);animation:bob 3s ease-in-out infinite reverse;filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
   /* stats live in their own layer and NEVER transform (stay anchored) */
   .fstats{width:100%;margin-top:2px}
