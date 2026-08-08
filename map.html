@@ -110,7 +110,18 @@
     filter:blur(2px);opacity:0;pointer-events:none;animation:breathBurst .6s ease forwards}
   @keyframes breathBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}40%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
 
-  /* skill cast glow on hero sprite */
+  /* monster skill VFX — colored radial bursts over the arena */
+  .fx{position:absolute;z-index:4;left:50%;top:42%;width:70px;height:70px;border-radius:50%;
+    filter:blur(1px);opacity:0;pointer-events:none;transform:translate(-50%,-50%);animation:fxBurst .6s ease forwards}
+  @keyframes fxBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}35%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+  .fx-splash{background:radial-gradient(circle,#aaffcc 0%,#39d98a 35%,transparent 72%)}
+  .fx-ice{background:radial-gradient(circle,#dff6ff 0%,#7cdbff 35%,transparent 72%)}
+  .fx-spike{background:radial-gradient(circle,#ffd1f5 0%,#c84bff 35%,transparent 72%)}
+  .fx-spore{background:radial-gradient(circle,#fff3b0 0%,#ffd24a 35%,transparent 72%)}
+  .fx-slash{background:radial-gradient(circle,#ffd0d0 0%,#ff4a4a 35%,transparent 72%)}
+  .fx-curse{background:radial-gradient(circle,#d9b3ff 0%,#7c2bd6 35%,transparent 72%)}
+  .fx-stomp{background:radial-gradient(circle,#c8d6ff 0%,#5c6bff 35%,transparent 72%)}
+
   .sprite.casting{animation:cast .5s ease}
   @keyframes cast{0%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}
     40%{filter:drop-shadow(0 0 30px rgba(180,120,255,1)) brightness(1.8) saturate(1.6)}100%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}}
@@ -191,21 +202,30 @@
 <script>
 (function(){
   // ---- Map setup ----
-  const COLS=7, ROWS=7;
+  const COLS=9, ROWS=9;
   // 0 = grass, 1 = road, monsters at given coords
   const grid = Array.from({length:ROWS},()=>Array(COLS).fill(0));
-  // mark a winding road
-  const road=[[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[1,4],[1,5],[2,5],[3,5],[4,5],[4,4],[4,3]];
-  road.forEach(([r,c])=>grid[r][c]=1);
+  // mark a winding road covering all quadrants so hero can reach every monster
+  const road=[];
+  for(let c=0;c<COLS;c++) road.push([4,c]);      // horizontal mid corridor
+  for(let r=0;r<ROWS;r++) road.push([r,4]);      // vertical mid corridor
+  // connect corners
+  road.push([1,3],[1,4],[2,6],[5,5],[6,2],[1,7],[4,7],[7,4],[7,7]);
+  road.forEach(([r,c])=>{ if(r>=0&&r<ROWS&&c>=0&&c<COLS) grid[r][c]=1; });
   // hero start
   let pos={r:3,c:0};
   // monsters: stage 0,1,2 placed on map
   const monsters=[
-    {stage:0, r:1, c:3, name:'บอทกากเน็ต', img:'assets/slime.png', alive:true},
-    {stage:1, r:4, c:4, name:'ไวรัสจอมจุ้น', img:'assets/virus.png', alive:true},
-    {stage:2, r:3, c:6, name:'เจ้าพ่อเน็ตกาก', img:'assets/dragon.png', alive:true},
+    {stage:0, r:1, c:3, name:'บอทกากเน็ต', img:'assets/slime_idle.png', id:0, alive:true},
+    {stage:0, r:5, c:5, name:'สไลม์น้ำแข็ง', img:'assets/iceslime_idle.png', id:1, alive:true},
+    {stage:1, r:2, c:6, name:'ไวรัสจอมจุ้น', img:'assets/virus_idle.png', id:2, alive:true},
+    {stage:1, r:6, c:2, name:'สปอร์เหลือง', img:'assets/spore_idle.png', id:3, alive:true},
+    {stage:2, r:1, c:7, name:'อสูรกาก', img:'assets/oni_idle.png', id:4, alive:true},
+    {stage:2, r:4, c:7, name:'ผีดิบเน็ต', img:'assets/zombie_idle.png', id:5, alive:true},
+    {stage:2, r:7, c:4, name:'ยักษ์เน็ต', img:'assets/troll_idle.png', id:6, alive:true},
+    {stage:2, r:7, c:7, name:'เจ้าพ่อเน็ตกาก', img:'assets/dragon_idle.png', id:7, alive:true},
   ];
-  const ENEMY_IMG=['assets/slime.png','assets/virus.png','assets/dragon.png'];
+  const ENEMY_IMG=['assets/slime.png','assets/iceslime_idle.png','assets/virus.png','assets/spore_idle.png','assets/oni_idle.png','assets/zombie_idle.png','assets/troll_idle.png','assets/dragon.png'];
 
   const mapEl=document.getElementById('map');
   const progressEl=document.getElementById('progress');
@@ -274,13 +294,13 @@
   function bSet(on){['bAtk','bSkill','bHeal'].forEach(id=>$(id).disabled=!on);}
   function startBattle(m){
     battleOpen=true; curMonster=m; busy=false;
-    hero=createHero(); enemy=createEnemy(m.stage);
+    hero=createHero(); enemy=createEnemy(m.id);
     bLog.innerHTML=''; bAdd('⚔️ เจอ '+m.name+'! การต่อสู้เริ่มต้น','sys');
     $('bTitle').textContent='⚔️ ต่อสู้กับ '+m.name;
     $('battle').classList.add('show');
     // preload + cache Image objects so frame-swaps are instant (no network wait)
     FR._cache = {};
-    [FR.hero, enemyFrames()].forEach((f,idx)=>{
+    [FR.hero, enemyFrames()].forEach((f)=>{
       ['idle','wind','hit'].forEach(k=>{
         if(f[k]){ const im=new Image(); im.src=bImg(f[k]); FR._cache[f[k]]=im; }
       });
@@ -296,7 +316,7 @@
     dragon: { idle:'assets/dragon.png',  wind:'assets/dragon_wind.png', hit:'assets/dragon_breath.png', breath:true },
   };
   function heroFrames(){ return FR.hero; }
-  function enemyFrames(){ return FR[['slime','virus','dragon'][curMonster.stage]] || FR.slime; }
+  function enemyFrames(){ return (enemy && enemy.frames) ? enemy.frames : FR.slime; }
   // Smooth attack: wind-up (anticipation) -> dash in + strike frame -> recover to idle
   function playAttack(attackerSpriteEl, targetSpriteEl, frames, opts){
     opts = opts || {};
@@ -332,6 +352,12 @@
     const arena=$('battle').querySelector('.arena');
     const b=document.createElement('div'); b.className='breath';
     arena.appendChild(b); setTimeout(()=>b.remove(),650);
+  }
+  // Skill VFX per monster type — colored burst overlay on the target sprite
+  function spawnFx(fx){
+    const arena=$('battle').querySelector('.arena');
+    const el=document.createElement('div'); el.className='fx fx-'+fx;
+    arena.appendChild(el); setTimeout(()=>el.remove(),650);
   }
   function bAct(type){
     if(busy)return; busy=true; bSet(false);
@@ -381,6 +407,7 @@
     const dmgAt = EF.breath ? 480 : 440;
     setTimeout(()=>floatDmg(heroS,e.dmg),dmgAt);
     const moveName = (e.type==='heavy' && enemy.skill) ? enemy.skill.name : 'โจมตี';
+    if(e.type==='heavy' && enemy.skill && enemy.skill.fx) spawnFx(enemy.skill.fx);
     bAdd(enemy.name+' ใช้ '+moveName+' -'+e.dmg,'foe');
     bRender();
     const st=battleState(hero,enemy);

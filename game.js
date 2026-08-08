@@ -42,18 +42,42 @@ function createHero() {
   });
 }
 
-// Enemy templates per stage (index 0..2)
-function createEnemy(stage) {
+// Enemy templates — 8 monsters across 3 dungeon stages
+// stage field groups them; each has idle/wind/hit frame keys + a unique skill
+function createEnemy(id) {
   const table = [
-    { name: 'บอทกากเน็ต', sprite: '🤖', spriteImg: 'assets/slime.png', weapon: 'body', attackStyle: 'tackle',
-      skill: { name: 'สาดสลาย', style: 'splash', desc: 'กระโดดจี๊ดสาดสไลม์ใส่' }, hp: 70,  mp: 0, atk: 16, def: 4 },
-    { name: 'ไวรัสจอมจุ้น', sprite: '🦠', spriteImg: 'assets/virus.png', weapon: 'spike', attackStyle: 'stab',
-      skill: { name: 'แทงหนาม', style: 'spike', desc: 'ยิงหนามไวรัสแทงทะลุ' }, hp: 95,  mp: 0, atk: 21, def: 6 },
-    { name: 'เจ้าพ่อเน็ตกาก', sprite: '👹', spriteImg: 'assets/dragon.png', weapon: 'fire', attackStyle: 'bite',
-      skill: { name: 'พ่นไฟกาก', style: 'breath', desc: 'อ้าปากพ่นไฟเผาไล่' }, hp: 160, mp: 0, atk: 27, def: 10 },
+    // Stage 1 — Slime family
+    { name: 'บอทกากเน็ต', sprite: '🤖', spriteImg: 'assets/slime.png', weapon: 'body', attackStyle: 'tackle', stage: 0,
+      frames: { idle:'assets/slime_idle.png', wind:'assets/slime_wind.png', hit:'assets/slime_hit.png' },
+      skill: { name: 'สาดสลาย', style: 'splash', fx:'splash', desc: 'กระโดดจี๊ดสาดสไลม์ใส่' }, hp: 70,  mp: 0, atk: 16, def: 4 },
+    { name: 'สไลม์น้ำแข็ง', sprite: '🔵', spriteImg: 'assets/iceslime_idle.png', weapon: 'ice', attackStyle: 'ram', stage: 0,
+      frames: { idle:'assets/iceslime_idle.png', wind:'assets/iceslime_wind.png', hit:'assets/iceslime_hit.png' },
+      skill: { name: 'ปะทะเย็นเฉียบ', style: 'splash', fx:'ice', desc: 'พุ่งชนพร้อมเหน็บความเย็น' }, hp: 85,  mp: 0, atk: 18, def: 5 },
+    // Stage 2 — Virus family
+    { name: 'ไวรัสจอมจุ้น', sprite: '🦠', spriteImg: 'assets/virus.png', weapon: 'spike', attackStyle: 'stab', stage: 1,
+      frames: { idle:'assets/virus_idle.png', wind:'assets/virus_wind.png', hit:'assets/virus_hit.png' },
+      skill: { name: 'แทงหนาม', style: 'spike', fx:'spike', desc: 'ยิงหนามไวรัสแทงทะลุ' }, hp: 95,  mp: 0, atk: 21, def: 6 },
+    { name: 'สปอร์เหลือง', sprite: '🟡', spriteImg: 'assets/spore_idle.png', weapon: 'spore', attackStyle: 'shoot', stage: 1,
+      frames: { idle:'assets/spore_idle.png', wind:'assets/spore_wind.png', hit:'assets/spore_hit.png' },
+      skill: { name: 'ระเบิดสปอร์', style: 'spike', fx:'spore', desc: 'ยิงสปอร์ระเบิดใส่' }, hp: 110, mp: 0, atk: 23, def: 7 },
+    // Stage 3 — Dragon lord + minions
+    { name: 'อสูรกาก', sprite: '👹', spriteImg: 'assets/oni_idle.png', weapon: 'claw', attackStyle: 'slash', stage: 2,
+      frames: { idle:'assets/oni_idle.png', wind:'assets/oni_wind.png', hit:'assets/oni_hit.png' },
+      skill: { name: 'เหวี่ยงกรงเล็บ', style: 'slash', fx:'slash', desc: 'ฟาดกรงเล็บแดงฉาน' }, hp: 130, mp: 0, atk: 25, def: 9 },
+    { name: 'ผีดิบเน็ต', sprite: '🧟', spriteImg: 'assets/zombie_idle.png', weapon: 'claw', attackStyle: 'claw', stage: 2,
+      frames: { idle:'assets/zombie_idle.png', wind:'assets/zombie_wind.png', hit:'assets/zombie_hit.png' },
+      skill: { name: 'คำสาปลาก', style: 'curse', fx:'curse', desc: 'ตะครุบแล้วสาปให้สะดุด' }, hp: 120, mp: 0, atk: 24, def: 8 },
+    { name: 'ยักษ์เน็ต', sprite: '👾', spriteImg: 'assets/troll_idle.png', weapon: 'stomp', attackStyle: 'stomp', stage: 2,
+      frames: { idle:'assets/troll_idle.png', wind:'assets/troll_wind.png', hit:'assets/troll_hit.png' },
+      skill: { name: 'เหยียบย่ำ', style: 'stomp', fx:'stomp', desc: 'เหยียบย่ำด้วยฝ่าเท้ายักษ์' }, hp: 140, mp: 0, atk: 26, def: 10 },
+    { name: 'เจ้าพ่อเน็ตกาก', sprite: '🐉', spriteImg: 'assets/dragon.png', weapon: 'fire', attackStyle: 'bite', stage: 2,
+      frames: { idle:'assets/dragon_idle.png', wind:'assets/dragon_wind.png', hit:'assets/dragon_hit.png' },
+      skill: { name: 'พ่นไฟกาก', style: 'breath', fx:'breath', desc: 'อ้าปากพ่นไฟเผาไล่' }, hp: 180, mp: 0, atk: 30, def: 12 },
   ];
-  return makeEntity(table[stage]);
+  return makeEntity(table[id]);
 }
+// keep stage->id mapping for map.js (monster order)
+const ENEMY_BY_STAGE = { 0:[0,1], 1:[2,3], 2:[4,5,6,7] };
 
 // ---- Combat math ----
 // Basic attack: physical, reduced by def
