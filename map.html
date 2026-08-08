@@ -279,8 +279,13 @@
     bLog.innerHTML=''; bAdd('⚔️ เจอ '+m.name+'! การต่อสู้เริ่มต้น','sys');
     $('bTitle').textContent='⚔️ ต่อสู้กับ '+m.name;
     $('battle').classList.add('show');
-    // preload all attack frames so frame-swaps are instant & smooth
-    [FR.hero, enemyFrames()].forEach(f=>{ ['idle','wind','hit'].forEach(k=>{ if(f[k]){const i=new Image(); i.src=bImg(f[k]);} }); });
+    // preload + cache Image objects so frame-swaps are instant (no network wait)
+    FR._cache = {};
+    [FR.hero, enemyFrames()].forEach((f,idx)=>{
+      ['idle','wind','hit'].forEach(k=>{
+        if(f[k]){ const im=new Image(); im.src=bImg(f[k]); FR._cache[f[k]]=im; }
+      });
+    });
     bRender(); bSet(true);
   }
   function bImg(src){ return src + '?v=2'; } // cache-bust: force fresh transparent sprites
@@ -299,14 +304,15 @@
     const img = attackerSpriteEl.querySelector('img');
     const isHero = attackerSpriteEl.id==='bHeroSprite';
     const dashCls = isHero ? 'dash-right' : 'dash-left';
+    const setFrame = (key)=>{ const src=frames[key]; if(src){ img.src = (FR._cache && FR._cache[src]) ? FR._cache[src].src : bImg(src); } };
     // STEP 1: wind-up (anticipation) — hold wind frame, recoil back ~220ms
     attackerSpriteEl.classList.add('wind');
-    img.src = bImg(frames.wind);
+    setFrame('wind');
     setTimeout(()=>{ attackerSpriteEl.classList.remove('wind'); }, 220);
     // STEP 2: dash forward + swap to strike frame at the lunge peak (~240ms)
     setTimeout(()=>{
       attackerSpriteEl.classList.add(dashCls);
-      img.src = bImg(frames.hit);
+      setFrame('hit');
       if(opts.arc){ spawnArc(attackerSpriteEl); }
       if(opts.breath){ spawnBreath(); }
     }, 240);
@@ -315,7 +321,7 @@
     // STEP 3: recover — remove dash, return to idle frame (~620ms)
     setTimeout(()=>{
       attackerSpriteEl.classList.remove(dashCls);
-      img.src = bImg(frames.idle);
+      setFrame('idle');
       targetSpriteEl.classList.remove('hurt');
     }, 620);
   }
