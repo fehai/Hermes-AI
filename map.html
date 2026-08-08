@@ -47,15 +47,14 @@
   @keyframes fade{from{opacity:0}to{opacity:1}}
   .overlay h2{font-size:clamp(20px,6vw,30px);margin-bottom:10px;text-align:center;
     background:linear-gradient(90deg,#fff,var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .arena{position:relative;height:230px;display:flex;justify-content:space-around;align-items:flex-end;width:min(94vw,480px);margin-bottom:12px;
+  .arena{position:relative;height:250px;display:flex;justify-content:space-around;align-items:center;width:min(94vw,480px);margin-bottom:12px;padding-top:6px;
     border-radius:18px;overflow:hidden;
     background:url('assets/battlefield.png') center/cover no-repeat, linear-gradient(180deg,#1a1430,#0d0a1f);
     box-shadow:inset 0 0 60px rgba(0,0,0,.7), 0 10px 30px rgba(0,0,0,.5)}
-  .arena::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,10,31,.35),rgba(13,10,31,.75))}
-  .fighter{position:relative;z-index:1;text-align:center;width:42%;display:flex;flex-direction:column;align-items:center}
+  .fighter{position:relative;z-index:1;text-align:center;width:42%;display:flex;flex-direction:column;align-items:center;max-height:200px}
   /* sprite layer: only THIS moves/animates, stats stay put below */
-  .sprite{position:relative;width:100%;display:flex;justify-content:center;align-items:flex-end;min-height:180px;max-height:200px}
-  .sprite img{max-height:190px;width:auto;object-fit:contain;filter:drop-shadow(0 0 14px rgba(124,92,255,.55));animation:bob 3s ease-in-out infinite}
+  .sprite{position:relative;width:100%;display:flex;justify-content:center;align-items:center;min-height:150px;max-height:180px}
+  .sprite img{max-height:175px;width:auto;object-fit:contain;filter:drop-shadow(0 0 14px rgba(124,92,255,.55));animation:bob 3s ease-in-out infinite}
   .fighter.enemy .sprite img{transform:scaleX(-1);animation:bob 3s ease-in-out infinite reverse;filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
   /* stats live in their own layer and NEVER transform (stay anchored) */
   .fstats{width:100%;margin-top:2px}
