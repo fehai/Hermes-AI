@@ -233,14 +233,14 @@ body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--txt);
   road.forEach(([r,c])=>{ if(r>=0&&r<ROWS&&c>=0&&c<COLS) grid[r][c]=1; });
   let pos={r:3,c:0};
   const monsters=[
-    {id:0, stage:0, r:1,c:3, name:'บอทกากเน็ต', img:'assets/slime_idle.png'},
-    {id:1, stage:0, r:5,c:5, name:'สไลม์น้ำแข็ง', img:'assets/iceslime_idle.png'},
-    {id:2, stage:1, r:2,c:6, name:'ไวรัสจอมจุ้น', img:'assets/virus_idle.png'},
-    {id:3, stage:1, r:6,c:2, name:'สปอร์เหลือง', img:'assets/spore_idle.png'},
-    {id:4, stage:2, r:1,c:7, name:'อสูรกาก', img:'assets/oni_idle.png'},
-    {id:5, stage:2, r:6,c:2, name:'ผีดิบเน็ต', img:'assets/zombie_idle.png'},
-    {id:6, stage:2, r:4,c:7, name:'ยักษ์เน็ต', img:'assets/troll_idle.png'},
-    {id:7, stage:2, r:7,c:7, name:'เจ้าพ่อเน็ตกาก', img:'assets/dragon_idle.png'},
+    {id:0, stage:0, r:1,c:3, name:'บอทกากเน็ต', img:'assets/slime_idle.png', alive:true},
+    {id:1, stage:0, r:5,c:5, name:'สไลม์น้ำแข็ง', img:'assets/iceslime_idle.png', alive:true},
+    {id:2, stage:1, r:2,c:6, name:'ไวรัสจอมจุ้น', img:'assets/virus_idle.png', alive:true},
+    {id:3, stage:1, r:6,c:2, name:'สปอร์เหลือง', img:'assets/spore_idle.png', alive:true},
+    {id:4, stage:2, r:1,c:7, name:'อสูรกาก', img:'assets/oni_idle.png', alive:true},
+    {id:5, stage:2, r:6,c:2, name:'ผีดิบเน็ต', img:'assets/zombie_idle.png', alive:true},
+    {id:6, stage:2, r:4,c:7, name:'ยักษ์เน็ต', img:'assets/troll_idle.png', alive:true},
+    {id:7, stage:2, r:7,c:7, name:'เจ้าพ่อเน็ตกาก', img:'assets/dragon_idle.png', alive:true},
   ];
   const stageNames=['ปราบสไลม์กาก','กวาดไวรัสจุ้น','รื้อบัลลังก์เจ้าพ่อ'];
   let battleOpen=false, curMonster=null, hero=null, enemy=null, busy=false;
