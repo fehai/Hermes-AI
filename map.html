@@ -267,10 +267,11 @@
     $('bEnemyHp').style.width=(enemy.hp/enemy.maxHp*100)+'%';
     $('bEnemyHpL').textContent='HP '+enemy.hp+'/'+enemy.maxHp;
     $('bEnemyName').textContent=enemy.name;
-    $('bEnemy').src = bImg((curMonster && curMonster.img) ? curMonster.img : (enemy.spriteImg || enemy.sprite || ''));
-    $('bHero').src = bImg('assets/knight.png');
-    // keep idle frame in sync (only when not mid-attack animation)
-    if(!busy){ $('bHero').src = bImg(heroFrames().idle); $('bEnemy').src = bImg(enemyFrames().idle); }
+    // never touch sprite src while an attack animation is playing (would clobber wind/strike frames)
+    if(!busy){
+      $('bEnemy').src = bImg((curMonster && curMonster.img) ? curMonster.img : (enemy.spriteImg || enemy.sprite || ''));
+      $('bHero').src = bImg(heroFrames().idle);
+    }
   }
   function bSet(on){['bAtk','bSkill','bHeal'].forEach(id=>$(id).disabled=!on);}
   function startBattle(m){
