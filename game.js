@@ -27,8 +27,9 @@ function makeEntity(cfg) {
 // Hero template
 function createHero() {
   return makeEntity({
-    name: 'มีมี่',
+    name: 'อัศวินมีมี่',
     sprite: '💜',
+    spriteImg: 'assets/knight.png',
     hp: 120, maxHp: 120,
     mp: 40, maxMp: 40,
     atk: 22, def: 8,
@@ -39,9 +40,9 @@ function createHero() {
 // Enemy templates per stage (index 0..2)
 function createEnemy(stage) {
   const table = [
-    { name: 'บอทกากเน็ต', sprite: '🤖', hp: 70,  mp: 0, atk: 16, def: 4 },
-    { name: 'ไวรัสจอมจุ้น', sprite: '🦠', hp: 95,  mp: 0, atk: 21, def: 6 },
-    { name: 'เจ้าพ่อเน็ตกาก', sprite: '👹', hp: 160, mp: 0, atk: 27, def: 10 },
+    { name: 'บอทกากเน็ต', sprite: '🤖', spriteImg: 'assets/slime.png', hp: 70,  mp: 0, atk: 16, def: 4 },
+    { name: 'ไวรัสจอมจุ้น', sprite: '🦠', spriteImg: 'assets/virus.png', hp: 95,  mp: 0, atk: 21, def: 6 },
+    { name: 'เจ้าพ่อเน็ตกาก', sprite: '👹', spriteImg: 'assets/dragon.png', hp: 160, mp: 0, atk: 27, def: 10 },
   ];
   return makeEntity(table[stage]);
 }
