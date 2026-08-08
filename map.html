@@ -278,7 +278,10 @@
     hero=createHero(); enemy=createEnemy(m.stage);
     bLog.innerHTML=''; bAdd('⚔️ เจอ '+m.name+'! การต่อสู้เริ่มต้น','sys');
     $('bTitle').textContent='⚔️ ต่อสู้กับ '+m.name;
-    $('battle').classList.add('show'); bRender(); bSet(true);
+    $('battle').classList.add('show');
+    // preload all attack frames so frame-swaps are instant & smooth
+    [FR.hero, enemyFrames()].forEach(f=>{ ['idle','wind','hit'].forEach(k=>{ if(f[k]){const i=new Image(); i.src=bImg(f[k]);} }); });
+    bRender(); bSet(true);
   }
   function bImg(src){ return src + '?v=2'; } // cache-bust: force fresh transparent sprites
   // --- per-character sprite frames (real frame-swap, smooth 3-step) ---
