@@ -11,9 +11,12 @@ function variance(base, pct) {
 
 // ---- Entity factory ----
 function makeEntity(cfg) {
-  return {
+  // spread all cfg fields so character-specific props (weapon, attackStyle,
+  // skill, spriteImg, etc.) survive; then ensure the required numeric fields.
+  return Object.assign({}, cfg, {
     name: cfg.name,
     sprite: cfg.sprite || '❓',
+    spriteImg: cfg.spriteImg || '',
     hp: cfg.hp,
     maxHp: cfg.hp,
     mp: cfg.mp != null ? cfg.mp : 0,
@@ -21,7 +24,7 @@ function makeEntity(cfg) {
     atk: cfg.atk,
     def: cfg.def,
     isHero: !!cfg.isHero,
-  };
+  });
 }
 
 // Hero template
