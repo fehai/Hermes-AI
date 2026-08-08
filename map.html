@@ -89,7 +89,7 @@
       <div class="fighter"><img id="bHero" src="assets/knight.png"><div class="fname">อัศวินมีมี่</div>
         <div class="row hp"><span id="bHeroHp"></span><div class="lbl" id="bHeroHpL"></div></div>
         <div class="row mp"><span id="bHeroMp"></span><div class="lbl" id="bHeroMpL"></div></div></div>
-      <div class="fighter enemy"><img id="bEnemy" src="assets/slime.png"><div class="fname" id="bEnemyName"></div>
+      <div class="fighter enemy"><img id="bEnemy" src="assets/slime.png" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\'font-size:80px\'>🤖</div>')"><div class="fname" id="bEnemyName"></div>
         <div class="row hp"><span id="bEnemyHp"></span><div class="lbl" id="bEnemyHpL"></div></div></div>
     </div>
     <div class="log" id="bLog"></div>
@@ -178,7 +178,7 @@
     $('bEnemyHp').style.width=(enemy.hp/enemy.maxHp*100)+'%';
     $('bEnemyHpL').textContent='HP '+enemy.hp+'/'+enemy.maxHp;
     $('bEnemyName').textContent=enemy.name;
-    $('bEnemy').src=enemy.spriteImg;
+    $('bEnemy').src = (curMonster && curMonster.img) ? curMonster.img : (enemy.spriteImg || enemy.sprite || '');
   }
   function bSet(on){['bAtk','bSkill','bHeal'].forEach(id=>$(id).disabled=!on);}
   function startBattle(m){
