@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hermes-AI · ภารกิจล้มเจ้าพ่อเน็ตกาก</title>
+<link rel="icon" type="image/png" sizes="256x256" href="favicon-256.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<style>
+  :root{
+    --bg1:#0f0c29; --bg2:#302b63; --bg3:#24243e;
+    --glass:rgba(255,255,255,.08); --glass-border:rgba(255,255,255,.18);
+    --text:#f5f5ff; --accent:#7c5cff; --accent2:#00e0ff; --hp:#39d98a; --mp:#5c9dff; --danger:#ff5c7c;
+    --shadow:rgba(0,0,0,.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{min-height:100vh;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;color:var(--text);
+    background:linear-gradient(-45deg,var(--bg1),var(--bg2),var(--bg3),var(--bg2));background-size:400% 400%;
+    animation:bg 18s ease infinite;display:flex;align-items:center;justify-content:center;padding:20px;overflow:hidden}
+  @keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+  .orb{position:fixed;border-radius:50%;filter:blur(60px);opacity:.5;z-index:0;animation:fl 14s ease-in-out infinite}
+  .orb.a{width:300px;height:300px;background:var(--accent);top:-80px;left:-60px}
+  .orb.b{width:260px;height:260px;background:var(--accent2);bottom:-100px;right:-40px;animation-delay:-7s}
+  @keyframes fl{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.1)}}
+
+  .wrap{position:relative;z-index:1;width:min(94vw,560px);background:var(--glass);border:1px solid var(--glass-border);
+    backdrop-filter:blur(18px) saturate(160%);border-radius:28px;box-shadow:0 24px 60px var(--shadow);padding:28px 26px;
+    transform:translateY(20px);opacity:0;animation:rise .9s cubic-bezier(.16,1,.3,1) forwards}
+  @keyframes rise{to{transform:translateY(0);opacity:1}}
+  h1{font-size:clamp(22px,5vw,30px);text-align:center;margin-bottom:4px;
+    background:linear-gradient(90deg,var(--text),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .stage{text-align:center;font-size:13px;opacity:.75;margin-bottom:18px;letter-spacing:1px}
+
+  .arena{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:14px}
+  .fighter{flex:1;text-align:center}
+  .sprite{font-size:64px;line-height:1;filter:drop-shadow(0 8px 14px rgba(124,92,255,.4));animation:bob 3s ease-in-out infinite}
+  .fighter.enemy .sprite{animation:bob 3s ease-in-out infinite reverse}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .fname{margin-top:6px;font-weight:700;font-size:15px}
+  .bar{height:14px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:6px;position:relative}
+  .bar>span{display:block;height:100%;border-radius:999px;transition:width .4s ease}
+  .bar.hp>span{background:linear-gradient(90deg,#39d98a,#23a6d5)}
+  .bar.mp>span{background:linear-gradient(90deg,#5c9dff,#7c5cff)}
+  .bar .lbl{position:absolute;inset:0;font-size:10px;line-height:14px;text-align:center;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+
+  .log{height:120px;overflow-y:auto;background:rgba(0,0,0,.25);border-radius:14px;padding:10px 12px;font-size:13px;
+    line-height:1.6;margin-bottom:14px;border:1px solid var(--glass-border)}
+  .log p{margin:2px 0}
+  .log .me{color:#b9a7ff}
+  .log .foe{color:#ff9db0}
+  .log .sys{color:#9fe6c9;font-style:italic}
+
+  .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .btn{border:none;cursor:pointer;font-size:14px;font-weight:700;color:#fff;padding:12px 8px;border-radius:14px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 8px 20px rgba(124,92,255,.4);
+    transition:transform .15s ease,box-shadow .15s ease}
+  .btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 12px 26px rgba(0,224,255,.4)}
+  .btn:active{transform:translateY(0) scale(.97)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn.heal{background:linear-gradient(90deg,#23a6d5,#39d98a)}
+
+  .overlay{position:fixed;inset:0;z-index:5;background:rgba(8,6,20,.82);backdrop-filter:blur(6px);
+    display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}
+  .overlay.show{display:flex;animation:fade .4s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .overlay h2{font-size:clamp(30px,8vw,52px);margin-bottom:10px}
+  .overlay.win h2{background:linear-gradient(90deg,#39d98a,#00e0ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .overlay.lose h2{background:linear-gradient(90deg,#ff5c7c,#ff9d5c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .overlay p{opacity:.85;margin-bottom:22px}
+  .back{display:block;text-align:center;margin-top:16px;font-size:12px;opacity:.6}
+  .back a{color:var(--accent2);text-decoration:none}
+  .shake{animation:shake .3s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
+</head>
+<body>
+  <div class="orb a"></div><div class="orb b"></div>
+
+  <div class="wrap">
+    <h1>💜 ภารกิจล้มเจ้าพ่อเน็ตกาก</h1>
+    <div class="stage" id="stageLabel">ด่านที่ 1 / 3 — บอทกากเน็ต</div>
+
+    <div class="arena">
+      <div class="fighter">
+        <div class="sprite" id="heroSprite">💜</div>
+        <div class="fname">มีมี่</div>
+        <div class="bar hp"><span id="heroHpBar" style="width:100%"></span><div class="lbl" id="heroHpLbl">120/120</div></div>
+        <div class="bar mp" style="margin-top:6px"><span id="heroMpBar" style="width:100%"></span><div class="lbl" id="heroMpLbl">40/40</div></div>
+      </div>
+      <div class="fighter enemy">
+        <div class="sprite" id="enemySprite">🤖</div>
+        <div class="fname" id="enemyName">บอทกากเน็ต</div>
+        <div class="bar hp"><span id="enemyHpBar" style="width:100%"></span><div class="lbl" id="enemyHpLbl">70/70</div></div>
+      </div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="actions">
+      <button class="btn" id="btnAtk">⚔️ โจมตี</button>
+      <button class="btn" id="btnSkill">✨ เวทมีมี่</button>
+      <button class="btn heal" id="btnHeal">💚 ฮีล</button>
+    </div>
+
+    <div class="back"><a href="index.html">← กลับหน้าแรก</a></div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <h2 id="ovTitle"></h2>
+    <p id="ovText"></p>
+    <button class="btn" id="ovBtn" style="max-width:200px">เล่นใหม่</button>
+  </div>
+
+<script src="game.js"></script>
+<script>
+(function(){
+  const STAGE_NAMES = [
+    'ด่านที่ 1 / 3 — บอทกากเน็ต',
+    'ด่านที่ 2 / 3 — ไวรัสจอมจุ้น',
+    'ด่านที่ 3 / 3 — เจ้าพ่อเน็ตกาก 👹',
+  ];
+  let hero, enemy, stage, busy;
+
+  const $ = id => document.getElementById(id);
+  const log = $('log');
+
+  function addLog(text, cls){
+    const p = document.createElement('p');
+    p.className = cls || 'sys';
+    p.textContent = text;
+    log.appendChild(p);
+    log.scrollTop = log.scrollHeight;
+  }
+  function render(){
+    $('heroHpBar').style.width = (hero.hp/hero.maxHp*100)+'%';
+    $('heroMpBar').style.width = (hero.mp/hero.maxMp*100)+'%';
+    $('heroHpLbl').textContent = hero.hp+'/'+hero.maxHp;
+    $('heroMpLbl').textContent = hero.mp+'/'+hero.maxMp;
+    $('enemyHpBar').style.width = (enemy.hp/enemy.maxHp*100)+'%';
+    $('enemyHpLbl').textContent = enemy.hp+'/'+enemy.maxHp;
+    $('enemyName').textContent = enemy.name;
+    $('enemySprite').textContent = enemy.sprite;
+    $('heroSprite').textContent = hero.sprite;
+    $('stageLabel').textContent = STAGE_NAMES[stage];
+  }
+  function shake(el){ el.classList.add('shake'); setTimeout(()=>el.classList.remove('shake'),300); }
+
+  function startGame(){
+    stage = 0;
+    hero = createHero();
+    enemy = createEnemy(stage);
+    busy = false;
+    log.innerHTML = '';
+    addLog('มีมี่: ลูกพี่สั่งมา มีมี่จัดการเจ้าพ่อเน็ตกากให้! 💜', 'sys');
+    render();
+    setButtons(true);
+  }
+
+  function setButtons(on){
+    ['btnAtk','btnSkill','btnHeal'].forEach(id => $(id).disabled = !on);
+  }
+
+  function heroAct(type){
+    if (busy) return;
+    busy = true; setButtons(false);
+    if (type==='attack'){
+      const d = basicAttack(hero, enemy);
+      addLog('มีมี่ โจมตี '+enemy.name+' -'+d, 'me');
+      shake($('enemySprite'));
+    } else if (type==='skill'){
+      const r = skillAttack(hero, enemy);
+      if (r.fail){ const d=basicAttack(hero,enemy); addLog('MP ไม่พอ! โจมตี -'+d,'me'); shake($('enemySprite')); }
+      else { addLog('มีมี่ ใช้ "เวทมีมี่" -'+r.dmg+' ✨','me'); shake($('enemySprite')); }
+    } else if (type==='heal'){
+      const r = healAction(hero);
+      if (r.fail){ const d=basicAttack(hero,enemy); addLog('MP ไม่พอ! โจมตี -'+d,'me'); shake($('enemySprite')); }
+      else { addLog('มีมี่ ฮีลตัวเอง +'+r.amount+' 💚','me'); shake($('heroSprite')); }
+    }
+    render();
+    if (battleState(hero,enemy)==='win'){ return onWin(); }
+    setTimeout(enemyAct, 650);
+  }
+
+  function enemyAct(){
+    const e = enemyTurn(enemy, hero);
+    addLog(enemy.name+' '+(e.type==='heavy'?'ตบหนัก':'โจมตี')+' -'+e.dmg, 'foe');
+    shake($('heroSprite'));
+    render();
+    const st = battleState(hero, enemy);
+    if (st==='lose'){ return onLose(); }
+    if (st==='win'){ return onWin(); }
+    busy = false; setButtons(true);
+  }
+
+  function onWin(){
+    if (stage < 2){
+      stage++;
+      addLog('🎉 ชนะ '+enemy.name+'! ผ่าน'+STAGE_NAMES[stage],'sys');
+      enemy = createEnemy(stage);
+      // small reward: restore a bit
+      hero.hp = Math.min(hero.maxHp, hero.hp+25);
+      hero.mp = Math.min(hero.maxMp, hero.mp+15);
+      busy = false; render(); setButtons(true);
+    } else {
+      showOverlay(true, '🏆  victory!', 'มีมี่จัดเจ้าพ่อเน็ตกากเรียบร้อย ลูกพี่เน็ตลื่นปรื้อนแล้ว! 💜');
+    }
+  }
+  function onLose(){
+    showOverlay(false, '💀 defeat', 'มีมี่สู้ไม่ไหวแล้ว ลูกพี่... ขอรีแมตช์ไหมคะ?');
+  }
+  function showOverlay(win, title, text){
+    const ov = $('overlay');
+    ov.className = 'overlay show ' + (win?'win':'lose');
+    $('ovTitle').textContent = title;
+    $('ovText').textContent = text;
+    setButtons(false);
+  }
+
+  // wire buttons
+  $('btnAtk').addEventListener('click', ()=>heroAct('attack'));
+  $('btnSkill').addEventListener('click', ()=>heroAct('skill'));
+  $('btnHeal').addEventListener('click', ()=>heroAct('heal'));
+  $('ovBtn').addEventListener('click', ()=>{ $('overlay').className='overlay'; startGame(); });
+
+  startGame();
+})();
+</script>
+</body>
+</html>
