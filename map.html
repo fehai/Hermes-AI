@@ -296,25 +296,25 @@
     const img = attackerSpriteEl.querySelector('img');
     const isHero = attackerSpriteEl.id==='bHeroSprite';
     const dashCls = isHero ? 'dash-right' : 'dash-left';
-    // STEP 1: wind-up (anticipation) ~180ms
+    // STEP 1: wind-up (anticipation) — hold wind frame, recoil back ~220ms
     attackerSpriteEl.classList.add('wind');
     img.src = bImg(frames.wind);
-    setTimeout(()=>{ attackerSpriteEl.classList.remove('wind'); }, 180);
-    // STEP 2: dash forward + swap to strike frame at the lunge peak (~200ms)
+    setTimeout(()=>{ attackerSpriteEl.classList.remove('wind'); }, 220);
+    // STEP 2: dash forward + swap to strike frame at the lunge peak (~240ms)
     setTimeout(()=>{
       attackerSpriteEl.classList.add(dashCls);
       img.src = bImg(frames.hit);
       if(opts.arc){ spawnArc(attackerSpriteEl); }
       if(opts.breath){ spawnBreath(); }
-    }, 200);
-    // target flinches as the hit lands (~340ms)
-    setTimeout(()=>{ targetSpriteEl.classList.add('hurt'); }, 340);
-    // STEP 3: recover — remove dash, return to idle frame (~560ms)
+    }, 240);
+    // target flinches as the hit lands (~380ms)
+    setTimeout(()=>{ targetSpriteEl.classList.add('hurt'); }, 380);
+    // STEP 3: recover — remove dash, return to idle frame (~620ms)
     setTimeout(()=>{
       attackerSpriteEl.classList.remove(dashCls);
       img.src = bImg(frames.idle);
       targetSpriteEl.classList.remove('hurt');
-    }, 560);
+    }, 620);
   }
   function spawnArc(spriteEl){
     const a=document.createElement('div'); a.className='slashfx go';
