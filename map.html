@@ -87,6 +87,71 @@
   .fighter.enemy.hurt img{animation:hurtE .4s ease}
   @keyframes hurtE{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
     30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6);transform:scaleX(-1) translateX(8px) rotate(2deg)}}
+
+  /* ===== WEAPON-SPECIFIC ATTACK POSES ===== */
+  /* HERO sword slash: lunge in, swing (rotate), back */
+  .atk-slash{animation:slash .5s ease}
+  @keyframes slash{0%{transform:translateX(0) rotate(0)}
+    25%{transform:translateX(60px) rotate(-12deg)}
+    45%{transform:translateX(60px) rotate(28deg) scale(1.08)}
+    65%{transform:translateX(40px) rotate(8deg)}
+    100%{transform:translateX(0) rotate(0)}}
+  .fighter.enemy.atk-slash img{} /* hero only */
+
+  /* SLIME tackle: big hop forward */
+  .atk-tackle{animation:tackle .5s ease}
+  @keyframes tackle{0%{transform:translateX(0)}
+    30%{transform:translate(-55px,-34px) scale(1.12)}
+    55%{transform:translate(-55px,0) scaleY(.85)}
+    100%{transform:translateX(0)}}
+  .fighter.enemy.atk-tackle img{animation:tackleMirror .5s ease}
+  @keyframes tackleMirror{0%{transform:scaleX(-1) translateX(0)}
+    30%{transform:scaleX(-1) translate(-55px,-34px) scale(1.12)}
+    55%{transform:scaleX(-1) translate(-55px,0) scaleY(.85)}
+    100%{transform:scaleX(-1) translateX(0)}}
+
+  /* VIRUS stab: lunge + thrust spikes (scale punch) */
+  .atk-stab{animation:stab .5s ease}
+  @keyframes stab{0%{transform:translateX(0) scale(1)}
+    35%{transform:translate(-50px,0) scaleX(1.15) scaleY(.92)}
+    55%{transform:translate(-50px,0) scaleX(.9) scaleY(1.1)}
+    100%{transform:translateX(0) scale(1)}}
+  .fighter.enemy.atk-stab img{animation:stabMirror .5s ease}
+  @keyframes stabMirror{0%{transform:scaleX(-1) scale(1)}
+    35%{transform:scaleX(-1) translate(-50px,0) scaleX(1.15) scaleY(.92)}
+    55%{transform:scaleX(-1) translate(-50px,0) scaleX(.9) scaleY(1.1)}
+    100%{transform:scaleX(-1) scale(1)}}
+
+  /* DRAGON bite: lunge + chomp (rotate head down) */
+  .atk-bite{animation:bite .5s ease}
+  @keyframes bite{0%{transform:translateX(0) rotate(0)}
+    30%{transform:translate(-60px,8px) rotate(10deg)}
+    50%{transform:translate(-60px,8px) rotate(-6deg) scale(1.05)}
+    100%{transform:translateX(0) rotate(0)}}
+  .fighter.enemy.atk-bite img{animation:biteMirror .5s ease}
+  @keyframes biteMirror{0%{transform:scaleX(-1) rotate(0)}
+    30%{transform:scaleX(-1) translate(-60px,8px) rotate(10deg)}
+    50%{transform:scaleX(-1) translate(-60px,8px) rotate(-6deg) scale(1.05)}
+    100%{transform:scaleX(-1) rotate(0)}}
+
+  /* skill-specific impact FX */
+  .fx-slash{animation:fxSlash .45s ease}     /* sword arc */
+  .fx-splash{animation:fxSplash .5s ease}   /* slime splash ring */
+  .fx-spike{animation:fxSpike .5s ease}      /* spike burst */
+  .fx-breath{animation:fxBreath .6s ease}    /* fire breath */
+  @keyframes fxSlash{0%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
+    40%{filter:drop-shadow(0 0 28px #fff) brightness(2.4) saturate(1.4)}100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}}
+  @keyframes fxSplash{0%{filter:drop-shadow(0 0 14px rgba(92,255,160,.4))}
+    40%{filter:drop-shadow(0 0 26px #39d98a) brightness(1.8)}100%{filter:drop-shadow(0 0 14px rgba(92,255,160,.4))}}
+  @keyframes fxSpike{0%{filter:drop-shadow(0 0 14px rgba(180,120,255,.5))}
+    40%{filter:drop-shadow(0 0 30px #c9a3ff) brightness(2.2) saturate(1.8)}60%{transform:scale(1.1) scaleX(-1)}100%{transform:scaleX(-1)}}
+  @keyframes fxBreath{0%{filter:drop-shadow(0 0 14px rgba(255,120,40,.5))}
+    40%{filter:drop-shadow(0 0 34px #ff7a1c) brightness(2.4) saturate(2)}100%{filter:drop-shadow(0 0 14px rgba(255,120,40,.5))}}
+  /* fire/breath particle layer */
+  .breath{position:absolute;z-index:4;left:50%;top:40%;width:60px;height:60px;border-radius:50%;
+    background:radial-gradient(circle,#fff 0%,#ffd24a 30%,#ff5a1c 60%,transparent 75%);
+    filter:blur(2px);opacity:0;pointer-events:none;animation:breathBurst .6s ease forwards}
+  @keyframes breathBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}40%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
   /* skill cast: burst of magic */
   .casting{animation:cast .5s ease}
   @keyframes cast{0%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}
@@ -232,29 +297,33 @@
   function bAct(type){
     if(busy)return; busy=true; bSet(false);
     const heroF=$('bHero').parentElement, enemyF=$('bEnemy').parentElement;
+    const heroPose='atk-'+hero.attackStyle;
+    const enemyFx=enemy.skill?(enemy.skill.style):'';
     if(type==='attack'){
       const d=basicAttack(hero,enemy);
-      heroF.classList.add('lunge-right'); setTimeout(()=>heroF.classList.remove('lunge-right'),360);
-      setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},330);
-      bAdd('อัศวินมีมี่ โจมตี -'+d,'me');
+      heroF.classList.add(heroPose); setTimeout(()=>heroF.classList.remove(heroPose),500);
+      setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},340);
+      bAdd('อัศวินมีมี่ ฟันดาบใส่ '+enemy.name+' -'+d,'me');
     }
     else if(type==='skill'){
       const r=skillAttack(hero,enemy);
       if(r.fail){const d=basicAttack(hero,enemy);
-        heroF.classList.add('lunge-right'); setTimeout(()=>heroF.classList.remove('lunge-right'),360);
-        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},330);
+        heroF.classList.add(heroPose); setTimeout(()=>heroF.classList.remove(heroPose),500);
+        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},340);
         bAdd('MP ไม่พอ! โจมตี -'+d,'me');
       }else{
         $('bHero').classList.add('casting'); setTimeout(()=>$('bHero').classList.remove('casting'),500);
-        setTimeout(()=>{enemyF.classList.add('skillhit'); floatDmg(enemyF,r.dmg,'#c9a3ff'); setTimeout(()=>enemyF.classList.remove('skillhit'),600);},300);
+        const fx='fx-'+(enemyFx||'slash');
+        setTimeout(()=>{enemyF.classList.add(fx); if(enemyFx==='breath')spawnBreath(); setTimeout(()=>enemyF.classList.remove(fx),600);},300);
+        floatDmg(enemyF,r.dmg,'#c9a3ff');
         bAdd('อัศวินมีมี่ ใช้ "เวทมีมี่" -'+r.dmg+' ✨','me');
       }
     }
     else if(type==='heal'){
       const r=healAction(hero);
       if(r.fail){const d=basicAttack(hero,enemy);
-        heroF.classList.add('lunge-right'); setTimeout(()=>heroF.classList.remove('lunge-right'),360);
-        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},330);
+        heroF.classList.add(heroPose); setTimeout(()=>heroF.classList.remove(heroPose),500);
+        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},340);
         bAdd('MP ไม่พอ! โจมตี -'+d,'me');
       }else{
         $('bHero').classList.add('casting'); setTimeout(()=>$('bHero').classList.remove('casting'),500);
@@ -264,19 +333,26 @@
     }
     bRender();
     if(battleState(hero,enemy)==='win')return bWin();
-    setTimeout(bEnemyTurn,720);
+    setTimeout(bEnemyTurn,760);
   }
   function bEnemyTurn(){
     const e=enemyTurn(enemy,hero);
     const heroF=$('bHero').parentElement, enemyF=$('bEnemy').parentElement;
-    enemyF.classList.add('lunge-left'); setTimeout(()=>enemyF.classList.remove('lunge-left'),360);
-    setTimeout(()=>{heroF.classList.add('hurt'); floatDmg(heroF,e.dmg); setTimeout(()=>heroF.classList.remove('hurt'),400);},330);
-    bAdd(enemy.name+' '+(e.type==='heavy'?'ตบหนัก':'โจมตี')+' -'+e.dmg,'foe');
+    const pose='atk-'+(e.type==='heavy'&&enemy.attackStyle?enemy.attackStyle:'tackle');
+    enemyF.classList.add(pose); setTimeout(()=>enemyF.classList.remove(pose),500);
+    setTimeout(()=>{heroF.classList.add('hurt'); floatDmg(heroF,e.dmg); setTimeout(()=>heroF.classList.remove('hurt'),400);},340);
+    const moveName = (e.type==='heavy' && enemy.skill) ? enemy.skill.name : 'โจมตี';
+    bAdd(enemy.name+' ใช้ '+moveName+' -'+e.dmg,'foe');
     bRender();
     const st=battleState(hero,enemy);
     if(st==='lose')return bLose();
     if(st==='win')return bWin();
     busy=false; bSet(true);
+  }
+  function spawnBreath(){
+    const arena=$('battle').querySelector('.arena');
+    const b=document.createElement('div'); b.className='breath';
+    arena.appendChild(b); setTimeout(()=>b.remove(),650);
   }
   function floatDmg(fighterEl, amount, color, isHeal){
     const arena=$('battle').querySelector('.arena');

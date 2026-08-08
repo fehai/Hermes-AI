@@ -30,6 +30,8 @@ function createHero() {
     name: 'อัศวินมีมี่',
     sprite: '💜',
     spriteImg: 'assets/knight.png',
+    weapon: 'sword',                      // for animation: lunges & slashes
+    attackStyle: 'slash',                 // distinct per character
     hp: 120, maxHp: 120,
     mp: 40, maxMp: 40,
     atk: 22, def: 8,
@@ -40,9 +42,12 @@ function createHero() {
 // Enemy templates per stage (index 0..2)
 function createEnemy(stage) {
   const table = [
-    { name: 'บอทกากเน็ต', sprite: '🤖', spriteImg: 'assets/slime.png', hp: 70,  mp: 0, atk: 16, def: 4 },
-    { name: 'ไวรัสจอมจุ้น', sprite: '🦠', spriteImg: 'assets/virus.png', hp: 95,  mp: 0, atk: 21, def: 6 },
-    { name: 'เจ้าพ่อเน็ตกาก', sprite: '👹', spriteImg: 'assets/dragon.png', hp: 160, mp: 0, atk: 27, def: 10 },
+    { name: 'บอทกากเน็ต', sprite: '🤖', spriteImg: 'assets/slime.png', weapon: 'body', attackStyle: 'tackle',
+      skill: { name: 'สาดสลาย', style: 'splash', desc: 'กระโดดจี๊ดสาดสไลม์ใส่' }, hp: 70,  mp: 0, atk: 16, def: 4 },
+    { name: 'ไวรัสจอมจุ้น', sprite: '🦠', spriteImg: 'assets/virus.png', weapon: 'spike', attackStyle: 'stab',
+      skill: { name: 'แทงหนาม', style: 'spike', desc: 'ยิงหนามไวรัสแทงทะลุ' }, hp: 95,  mp: 0, atk: 21, def: 6 },
+    { name: 'เจ้าพ่อเน็ตกาก', sprite: '👹', spriteImg: 'assets/dragon.png', weapon: 'fire', attackStyle: 'bite',
+      skill: { name: 'พ่นไฟกาก', style: 'breath', desc: 'อ้าปากพ่นไฟเผาไล่' }, hp: 160, mp: 0, atk: 27, def: 10 },
   ];
   return makeEntity(table[stage]);
 }
