@@ -70,6 +70,39 @@
   .overlay .btn.heal{background:linear-gradient(90deg,#23a6d5,#39d98a)}
   .overlay .btn:disabled{opacity:.4;cursor:not-allowed}
   .shake{animation:shake .3s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  /* attack lunge: hero/enemy darts toward the opponent */
+  .lunge-right{animation:lungeR .35s ease}
+  .lunge-left{animation:lungeL .35s ease}
+  @keyframes lungeR{0%{transform:translateX(0)}40%{transform:translateX(55px)}100%{transform:translateX(0)}}
+  @keyframes lungeL{0%{transform:translateX(0)}40%{transform:translateX(-55px)}100%{transform:translateX(0)}}
+  /* enemy faces left, so its lunge is mirrored */
+  .fighter.enemy.lunge-left img{animation:lungeLmirror .35s ease}
+  .fighter.enemy.lunge-right img{animation:lungeRmirror .35s ease}
+  @keyframes lungeRmirror{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(-55px)}100%{transform:scaleX(-1) translateX(0)}}
+  @keyframes lungeLmirror{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(55px)}100%{transform:scaleX(-1) translateX(0)}}
+  /* take-damage: flash red + recoil */
+  .hurt{animation:hurt .4s ease}
+  @keyframes hurt{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
+    30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6);transform:translateX(8px) rotate(2deg)}}
+  .fighter.enemy.hurt img{animation:hurtE .4s ease}
+  @keyframes hurtE{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
+    30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6);transform:scaleX(-1) translateX(8px) rotate(2deg)}}
+  /* skill cast: burst of magic */
+  .casting{animation:cast .5s ease}
+  @keyframes cast{0%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}
+    40%{filter:drop-shadow(0 0 30px rgba(180,120,255,1)) brightness(1.8) saturate(1.6)}100%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}}
+  /* skill impact on enemy */
+  .skillhit{animation:skillhit .6s ease}
+  @keyframes skillhit{0%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
+    35%{filter:drop-shadow(0 0 34px rgba(180,120,255,1)) brightness(2.4) saturate(2)}60%{transform:scale(1.12) scaleX(-1)}100%{transform:scaleX(-1)}}
+  /* floating damage number */
+  .dmg{position:absolute;z-index:5;font-weight:900;font-size:26px;color:#ff5a6e;text-shadow:0 2px 6px #000,0 0 10px #ff2a44;pointer-events:none;animation:floatUp .9s ease forwards}
+  .dmg.heal{color:#5dffa0;text-shadow:0 2px 6px #000,0 0 10px #19ff7a}
+  @keyframes floatUp{0%{opacity:0;transform:translateY(10px) scale(.6)}20%{opacity:1;transform:translateY(-6px) scale(1.1)}100%{opacity:0;transform:translateY(-46px) scale(1)}}
+  /* defeated hero */
+  .defeated{animation:fadeOut .8s ease forwards}
+  @keyframes fadeOut{to{opacity:.15;filter:grayscale(1) brightness(.5)}}
+  @media (prefers-reduced-motion:reduce){.fighter img{animation:none!important}.lunge-right,.lunge-left,.hurt,.casting,.skillhit{animation:none!important}}
 </style>
 </head>
 <body>
@@ -198,20 +231,65 @@
   function bImg(src){ return src + '?v=2'; } // cache-bust: force fresh transparent sprites
   function bAct(type){
     if(busy)return; busy=true; bSet(false);
-    if(type==='attack'){const d=basicAttack(hero,enemy);bAdd('อัศวินมีมี่ โจมตี -'+d,'me');shake($('bEnemy'));}
-    else if(type==='skill'){const r=skillAttack(hero,enemy);if(r.fail){const d=basicAttack(hero,enemy);bAdd('MP ไม่พอ! โจมตี -'+d,'me');shake($('bEnemy'));}else{bAdd('อัศวินมีมี่ ใช้ "เวทมีมี่" -'+r.dmg+' ✨','me');shake($('bEnemy'));}}
-    else if(type==='heal'){const r=healAction(hero);if(r.fail){const d=basicAttack(hero,enemy);bAdd('MP ไม่พอ! โจมตี -'+d,'me');shake($('bEnemy'));}else{bAdd('อัศวินมีมี่ ฮีล +'+r.amount+' 💚','me');shake($('bHero'));}}
+    const heroF=$('bHero').parentElement, enemyF=$('bEnemy').parentElement;
+    if(type==='attack'){
+      const d=basicAttack(hero,enemy);
+      heroF.classList.add('lunge-right'); setTimeout(()=>heroF.classList.remove('lunge-right'),360);
+      setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},330);
+      bAdd('อัศวินมีมี่ โจมตี -'+d,'me');
+    }
+    else if(type==='skill'){
+      const r=skillAttack(hero,enemy);
+      if(r.fail){const d=basicAttack(hero,enemy);
+        heroF.classList.add('lunge-right'); setTimeout(()=>heroF.classList.remove('lunge-right'),360);
+        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},330);
+        bAdd('MP ไม่พอ! โจมตี -'+d,'me');
+      }else{
+        $('bHero').classList.add('casting'); setTimeout(()=>$('bHero').classList.remove('casting'),500);
+        setTimeout(()=>{enemyF.classList.add('skillhit'); floatDmg(enemyF,r.dmg,'#c9a3ff'); setTimeout(()=>enemyF.classList.remove('skillhit'),600);},300);
+        bAdd('อัศวินมีมี่ ใช้ "เวทมีมี่" -'+r.dmg+' ✨','me');
+      }
+    }
+    else if(type==='heal'){
+      const r=healAction(hero);
+      if(r.fail){const d=basicAttack(hero,enemy);
+        heroF.classList.add('lunge-right'); setTimeout(()=>heroF.classList.remove('lunge-right'),360);
+        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},330);
+        bAdd('MP ไม่พอ! โจมตี -'+d,'me');
+      }else{
+        $('bHero').classList.add('casting'); setTimeout(()=>$('bHero').classList.remove('casting'),500);
+        floatDmg(heroF,r.amount,'#5dffa0',true);
+        bAdd('อัศวินมีมี่ ฮีล +'+r.amount+' 💚','me');
+      }
+    }
     bRender();
     if(battleState(hero,enemy)==='win')return bWin();
-    setTimeout(bEnemyTurn,650);
+    setTimeout(bEnemyTurn,720);
   }
   function bEnemyTurn(){
     const e=enemyTurn(enemy,hero);
-    bAdd(enemy.name+' '+(e.type==='heavy'?'ตบหนัก':'โจมตี')+' -'+e.dmg,'foe');shake($('bHero'));bRender();
+    const heroF=$('bHero').parentElement, enemyF=$('bEnemy').parentElement;
+    enemyF.classList.add('lunge-left'); setTimeout(()=>enemyF.classList.remove('lunge-left'),360);
+    setTimeout(()=>{heroF.classList.add('hurt'); floatDmg(heroF,e.dmg); setTimeout(()=>heroF.classList.remove('hurt'),400);},330);
+    bAdd(enemy.name+' '+(e.type==='heavy'?'ตบหนัก':'โจมตี')+' -'+e.dmg,'foe');
+    bRender();
     const st=battleState(hero,enemy);
     if(st==='lose')return bLose();
     if(st==='win')return bWin();
     busy=false; bSet(true);
+  }
+  function floatDmg(fighterEl, amount, color, isHeal){
+    const arena=$('battle').querySelector('.arena');
+    const el=document.createElement('div');
+    el.className='dmg'+(isHeal?' heal':'');
+    el.textContent=(isHeal?'+':'-')+amount;
+    if(color) el.style.color=color;
+    const rect=fighterEl.getBoundingClientRect();
+    const arect=arena.getBoundingClientRect();
+    el.style.left=(rect.left-arect.left+rect.width/2-14)+'px';
+    el.style.top=(rect.top-arect.top+10)+'px';
+    arena.appendChild(el);
+    setTimeout(()=>el.remove(),900);
   }
   function bWin(){
     curMonster.alive=false;
@@ -229,7 +307,8 @@
   }
   function bLose(){
     bAdd('💀 อัศวินมีมี่ล้มลง...','foe');
-    setTimeout(()=>{ $('battle').classList.remove('show'); battleOpen=false; overlayEnd(false); },900);
+    $('bHero').classList.add('defeated');
+    setTimeout(()=>{ $('battle').classList.remove('show'); battleOpen=false; overlayEnd(false); },1100);
   }
   $('bAtk').addEventListener('click',()=>bAct('attack'));
   $('bSkill').addEventListener('click',()=>bAct('skill'));
@@ -254,7 +333,6 @@
 
   // init
   buildMap();
-  function shake(el){el.classList.add('shake');setTimeout(()=>el.classList.remove('shake'),300);}
 })();
 </script>
 </body>
