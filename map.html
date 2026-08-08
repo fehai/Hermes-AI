@@ -52,9 +52,13 @@
     background:url('assets/battlefield.png') center/cover no-repeat, linear-gradient(180deg,#1a1430,#0d0a1f);
     box-shadow:inset 0 0 60px rgba(0,0,0,.7), 0 10px 30px rgba(0,0,0,.5)}
   .arena::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(13,10,31,.35),rgba(13,10,31,.75))}
-  .fighter{position:relative;z-index:1;text-align:center;width:42%}
-  .fighter img{height:160px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(124,92,255,.55));animation:bob 3s ease-in-out infinite}
-  .fighter.enemy img{transform:scaleX(-1);animation:bob 3s ease-in-out infinite reverse;filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
+  .fighter{position:relative;z-index:1;text-align:center;width:42%;display:flex;flex-direction:column;align-items:center}
+  /* sprite layer: only THIS moves/animates, stats stay put below */
+  .sprite{position:relative;width:100%;display:flex;justify-content:center;align-items:flex-end;min-height:170px}
+  .sprite img{height:170px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(124,92,255,.55));animation:bob 3s ease-in-out infinite}
+  .fighter.enemy .sprite img{transform:scaleX(-1);animation:bob 3s ease-in-out infinite reverse;filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
+  /* stats live in their own layer and NEVER transform (stay anchored) */
+  .fstats{width:100%;margin-top:2px}
   .fname{font-weight:800;font-size:14px;margin-top:4px;text-shadow:0 2px 6px rgba(0,0,0,.8);color:#eaf6ff}
   .fighter.enemy .fname{color:#ffc2cf}
   .row{position:relative;height:16px;border-radius:9px;overflow:hidden;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.18);margin:4px auto;max-width:190px}
@@ -80,78 +84,45 @@
   .fighter.enemy.lunge-right img{animation:lungeRmirror .35s ease}
   @keyframes lungeRmirror{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(-55px)}100%{transform:scaleX(-1) translateX(0)}}
   @keyframes lungeLmirror{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(55px)}100%{transform:scaleX(-1) translateX(0)}}
-  /* take-damage: flash red + recoil */
-  .hurt{animation:hurt .4s ease}
+  /* take-damage: flash red + recoil on SPRITE only */
+  .sprite.hurt{animation:hurt .4s ease}
   @keyframes hurt{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
-    30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6);transform:translateX(8px) rotate(2deg)}}
-  .fighter.enemy.hurt img{animation:hurtE .4s ease}
+    30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6)}}
+  .fighter.enemy .sprite.hurt img{animation:hurtE .4s ease}
   @keyframes hurtE{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
-    30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6);transform:scaleX(-1) translateX(8px) rotate(2deg)}}
+    30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6)}}
 
-  /* ===== WEAPON-SPECIFIC ATTACK POSES ===== */
-  /* HERO sword slash: lunge in, swing (rotate), back */
-  .atk-slash{animation:slash .5s ease}
-  @keyframes slash{0%{transform:translateX(0) rotate(0)}
-    25%{transform:translateX(60px) rotate(-12deg)}
-    45%{transform:translateX(60px) rotate(28deg) scale(1.08)}
-    65%{transform:translateX(40px) rotate(8deg)}
-    100%{transform:translateX(0) rotate(0)}}
-  .fighter.enemy.atk-slash img{} /* hero only */
+  /* forward dash: sprite darts toward opponent (actual movement, no idle) */
+  .sprite.dash-right{animation:dashR .42s ease}
+  .sprite.dash-left{animation:dashL .42s ease}
+  @keyframes dashR{0%{transform:translateX(0)}45%{transform:translateX(70px)}100%{transform:translateX(0)}}
+  @keyframes dashL{0%{transform:translateX(0)}45%{transform:translateX(-70px)}100%{transform:translateX(0)}}
 
-  /* SLIME tackle: big hop forward */
-  .atk-tackle{animation:tackle .5s ease}
-  @keyframes tackle{0%{transform:translateX(0)}
-    30%{transform:translate(-55px,-34px) scale(1.12)}
-    55%{transform:translate(-55px,0) scaleY(.85)}
-    100%{transform:translateX(0)}}
-  .fighter.enemy.atk-tackle img{animation:tackleMirror .5s ease}
-  @keyframes tackleMirror{0%{transform:scaleX(-1) translateX(0)}
-    30%{transform:scaleX(-1) translate(-55px,-34px) scale(1.12)}
-    55%{transform:scaleX(-1) translate(-55px,0) scaleY(.85)}
-    100%{transform:scaleX(-1) translateX(0)}}
+  /* slash arc FX overlay (positioned on sprite) */
+  .slashfx{position:absolute;z-index:3;width:150px;height:150px;left:50%;top:10px;transform:translateX(-50%);
+    background:url('assets/slash_arc.png') center/contain no-repeat;opacity:0;pointer-events:none}
+  .slashfx.go{animation:arcPop .4s ease forwards}
+  @keyframes arcPop{0%{opacity:0;transform:translateX(-50%) scale(.4) rotate(-20deg)}
+    40%{opacity:1;transform:translateX(-50%) scale(1.15) rotate(0)}100%{opacity:0;transform:translateX(-50%) scale(1.3) rotate(10deg)}}
 
-  /* VIRUS stab: lunge + thrust spikes (scale punch) */
-  .atk-stab{animation:stab .5s ease}
-  @keyframes stab{0%{transform:translateX(0) scale(1)}
-    35%{transform:translate(-50px,0) scaleX(1.15) scaleY(.92)}
-    55%{transform:translate(-50px,0) scaleX(.9) scaleY(1.1)}
-    100%{transform:translateX(0) scale(1)}}
-  .fighter.enemy.atk-stab img{animation:stabMirror .5s ease}
-  @keyframes stabMirror{0%{transform:scaleX(-1) scale(1)}
-    35%{transform:scaleX(-1) translate(-50px,0) scaleX(1.15) scaleY(.92)}
-    55%{transform:scaleX(-1) translate(-50px,0) scaleX(.9) scaleY(1.1)}
-    100%{transform:scaleX(-1) scale(1)}}
-
-  /* DRAGON bite: lunge + chomp (rotate head down) */
-  .atk-bite{animation:bite .5s ease}
-  @keyframes bite{0%{transform:translateX(0) rotate(0)}
-    30%{transform:translate(-60px,8px) rotate(10deg)}
-    50%{transform:translate(-60px,8px) rotate(-6deg) scale(1.05)}
-    100%{transform:translateX(0) rotate(0)}}
-  .fighter.enemy.atk-bite img{animation:biteMirror .5s ease}
-  @keyframes biteMirror{0%{transform:scaleX(-1) rotate(0)}
-    30%{transform:scaleX(-1) translate(-60px,8px) rotate(10deg)}
-    50%{transform:scaleX(-1) translate(-60px,8px) rotate(-6deg) scale(1.05)}
-    100%{transform:scaleX(-1) rotate(0)}}
-
-  /* skill-specific impact FX */
-  .fx-slash{animation:fxSlash .45s ease}     /* sword arc */
-  .fx-splash{animation:fxSplash .5s ease}   /* slime splash ring */
-  .fx-spike{animation:fxSpike .5s ease}      /* spike burst */
-  .fx-breath{animation:fxBreath .6s ease}    /* fire breath */
-  @keyframes fxSlash{0%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
-    40%{filter:drop-shadow(0 0 28px #fff) brightness(2.4) saturate(1.4)}100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}}
-  @keyframes fxSplash{0%{filter:drop-shadow(0 0 14px rgba(92,255,160,.4))}
-    40%{filter:drop-shadow(0 0 26px #39d98a) brightness(1.8)}100%{filter:drop-shadow(0 0 14px rgba(92,255,160,.4))}}
-  @keyframes fxSpike{0%{filter:drop-shadow(0 0 14px rgba(180,120,255,.5))}
-    40%{filter:drop-shadow(0 0 30px #c9a3ff) brightness(2.2) saturate(1.8)}60%{transform:scale(1.1) scaleX(-1)}100%{transform:scaleX(-1)}}
-  @keyframes fxBreath{0%{filter:drop-shadow(0 0 14px rgba(255,120,40,.5))}
-    40%{filter:drop-shadow(0 0 34px #ff7a1c) brightness(2.4) saturate(2)}100%{filter:drop-shadow(0 0 14px rgba(255,120,40,.5))}}
   /* fire/breath particle layer */
   .breath{position:absolute;z-index:4;left:50%;top:40%;width:60px;height:60px;border-radius:50%;
     background:radial-gradient(circle,#fff 0%,#ffd24a 30%,#ff5a1c 60%,transparent 75%);
     filter:blur(2px);opacity:0;pointer-events:none;animation:breathBurst .6s ease forwards}
   @keyframes breathBurst{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}40%{opacity:.95}100%{opacity:0;transform:translate(-50%,-50%) scale(2.2)}}
+
+  /* skill cast glow on hero sprite */
+  .sprite.casting{animation:cast .5s ease}
+  @keyframes cast{0%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}
+    40%{filter:drop-shadow(0 0 30px rgba(180,120,255,1)) brightness(1.8) saturate(1.6)}100%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}}
+  /* skill impact on enemy sprite */
+  .sprite.skillhit{animation:skillhit .6s ease}
+  @keyframes skillhit{0%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}
+    35%{filter:drop-shadow(0 0 34px rgba(180,120,255,1)) brightness(2.4) saturate(2)}100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5))}}
+
+  /* defeated hero sprite */
+  .sprite.defeated{animation:fadeOut .8s ease forwards}
+  @keyframes fadeOut{to{opacity:.15;filter:grayscale(1) brightness(.5)}}
   /* skill cast: burst of magic */
   .casting{animation:cast .5s ease}
   @keyframes cast{0%{filter:drop-shadow(0 0 14px rgba(124,92,255,.55)) brightness(1)}
@@ -190,11 +161,21 @@
   <div class="overlay" id="battle">
     <h2 id="bTitle"></h2>
     <div class="arena">
-      <div class="fighter"><img id="bHero" src="assets/knight.png"><div class="fname">อัศวินมีมี่</div>
-        <div class="row hp"><span id="bHeroHp"></span><div class="lbl" id="bHeroHpL"></div></div>
-        <div class="row mp"><span id="bHeroMp"></span><div class="lbl" id="bHeroMpL"></div></div></div>
-      <div class="fighter enemy"><img id="bEnemy" src="assets/slime.png" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\'font-size:80px\'>🤖</div>')"><div class="fname" id="bEnemyName"></div>
-        <div class="row hp"><span id="bEnemyHp"></span><div class="lbl" id="bEnemyHpL"></div></div></div>
+      <div class="fighter">
+        <div class="sprite" id="bHeroSprite"><img id="bHero" src="assets/knight.png"></div>
+        <div class="fstats">
+          <div class="fname">อัศวินมีมี่</div>
+          <div class="row hp"><span id="bHeroHp"></span><div class="lbl" id="bHeroHpL"></div></div>
+          <div class="row mp"><span id="bHeroMp"></span><div class="lbl" id="bHeroMpL"></div></div>
+        </div>
+      </div>
+      <div class="fighter enemy">
+        <div class="sprite" id="bEnemySprite"><img id="bEnemy" src="assets/slime.png" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\'font-size:80px\'>🤖</div>')"></div>
+        <div class="fstats">
+          <div class="fname" id="bEnemyName"></div>
+          <div class="row hp"><span id="bEnemyHp"></span><div class="lbl" id="bEnemyHpL"></div></div>
+        </div>
+      </div>
     </div>
     <div class="log" id="bLog"></div>
     <div class="actions">
@@ -284,6 +265,8 @@
     $('bEnemyName').textContent=enemy.name;
     $('bEnemy').src = bImg((curMonster && curMonster.img) ? curMonster.img : (enemy.spriteImg || enemy.sprite || ''));
     $('bHero').src = bImg('assets/knight.png');
+    // keep idle frame in sync (only when not mid-attack animation)
+    if(!busy){ $('bHero').src = bImg(heroFrames().idle); $('bEnemy').src = bImg(enemyFrames().idle); }
   }
   function bSet(on){['bAtk','bSkill','bHeal'].forEach(id=>$(id).disabled=!on);}
   function startBattle(m){
@@ -294,53 +277,89 @@
     $('battle').classList.add('show'); bRender(); bSet(true);
   }
   function bImg(src){ return src + '?v=2'; } // cache-bust: force fresh transparent sprites
+  // --- per-character sprite frames (real frame-swap, not static lean) ---
+  const FR = {
+    hero:   { idle:'assets/knight.png',  wind:'assets/knight_wind.png', hit:'assets/knight_slash.png', arc:true },
+    slime:  { idle:'assets/slime.png',   hit:'assets/slime_leap.png' },
+    virus:  { idle:'assets/virus.png',   hit:'assets/virus_stab.png' },
+    dragon: { idle:'assets/dragon.png',  hit:'assets/dragon_breath.png', breath:true },
+  };
+  function heroFrames(){ return FR.hero; }
+  function enemyFrames(){ return FR[['slime','virus','dragon'][curMonster.stage]] || FR.slime; }
+  // Animate an attacker sprite: dash toward target, swap to attack frame, show FX, return to idle
+  function playAttack(attackerSpriteEl, targetSpriteEl, frames, opts){
+    opts = opts || {};
+    const dir = attackerSpriteEl.id==='bHeroSprite' ? 'dash-right' : 'dash-left';
+    const img = attackerSpriteEl.querySelector('img');
+    attackerSpriteEl.classList.add(dir);
+    setTimeout(()=>{ attackerSpriteEl.classList.remove(dir); }, 420);
+    // swap to the "action" frame at the peak of the dash (~210ms)
+    setTimeout(()=>{
+      img.src = bImg(frames.hit);
+      if(opts.arc){ spawnArc(attackerSpriteEl); }
+      if(opts.breath){ spawnBreath(); }
+    }, 200);
+    // target flinches
+    setTimeout(()=>{ targetSpriteEl.classList.add('hurt'); }, 360);
+    // return to idle frame after the strike
+    setTimeout(()=>{ img.src = bImg(frames.idle); targetSpriteEl.classList.remove('hurt'); }, 560);
+  }
+  function spawnArc(spriteEl){
+    const a=document.createElement('div'); a.className='slashfx go';
+    spriteEl.appendChild(a); setTimeout(()=>a.remove(),420);
+  }
+  function spawnBreath(){
+    const arena=$('battle').querySelector('.arena');
+    const b=document.createElement('div'); b.className='breath';
+    arena.appendChild(b); setTimeout(()=>b.remove(),650);
+  }
   function bAct(type){
     if(busy)return; busy=true; bSet(false);
-    const heroF=$('bHero').parentElement, enemyF=$('bEnemy').parentElement;
-    const heroPose='atk-'+hero.attackStyle;
-    const enemyFx=enemy.skill?(enemy.skill.style):'';
+    const heroS=$('bHeroSprite'), enemyS=$('bEnemySprite');
+    const HF=heroFrames(), EF=enemyFrames();
     if(type==='attack'){
       const d=basicAttack(hero,enemy);
-      heroF.classList.add(heroPose); setTimeout(()=>heroF.classList.remove(heroPose),500);
-      setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},340);
+      playAttack(heroS, enemyS, HF, {arc:HF.arc});
+      setTimeout(()=>floatDmg(enemyS,d),440);
       bAdd('อัศวินมีมี่ ฟันดาบใส่ '+enemy.name+' -'+d,'me');
     }
     else if(type==='skill'){
       const r=skillAttack(hero,enemy);
       if(r.fail){const d=basicAttack(hero,enemy);
-        heroF.classList.add(heroPose); setTimeout(()=>heroF.classList.remove(heroPose),500);
-        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},340);
+        playAttack(heroS, enemyS, HF, {arc:HF.arc});
+        setTimeout(()=>floatDmg(enemyS,d),440);
         bAdd('MP ไม่พอ! โจมตี -'+d,'me');
       }else{
-        $('bHero').classList.add('casting'); setTimeout(()=>$('bHero').classList.remove('casting'),500);
-        const fx='fx-'+(enemyFx||'slash');
-        setTimeout(()=>{enemyF.classList.add(fx); if(enemyFx==='breath')spawnBreath(); setTimeout(()=>enemyF.classList.remove(fx),600);},300);
-        floatDmg(enemyF,r.dmg,'#c9a3ff');
+        heroS.classList.add('casting'); setTimeout(()=>heroS.classList.remove('casting'),500);
+        enemyS.classList.add('skillhit'); setTimeout(()=>enemyS.classList.remove('skillhit'),600);
+        if(EF.breath) spawnBreath();
+        floatDmg(enemyS,r.dmg,'#c9a3ff');
         bAdd('อัศวินมีมี่ ใช้ "เวทมีมี่" -'+r.dmg+' ✨','me');
       }
     }
     else if(type==='heal'){
       const r=healAction(hero);
       if(r.fail){const d=basicAttack(hero,enemy);
-        heroF.classList.add(heroPose); setTimeout(()=>heroF.classList.remove(heroPose),500);
-        setTimeout(()=>{enemyF.classList.add('hurt'); floatDmg(enemyF,d); setTimeout(()=>enemyF.classList.remove('hurt'),400);},340);
+        playAttack(heroS, enemyS, HF, {arc:HF.arc});
+        setTimeout(()=>floatDmg(enemyS,d),440);
         bAdd('MP ไม่พอ! โจมตี -'+d,'me');
       }else{
-        $('bHero').classList.add('casting'); setTimeout(()=>$('bHero').classList.remove('casting'),500);
-        floatDmg(heroF,r.amount,'#5dffa0',true);
+        heroS.classList.add('casting'); setTimeout(()=>heroS.classList.remove('casting'),500);
+        floatDmg(heroS,r.amount,'#5dffa0',true);
         bAdd('อัศวินมีมี่ ฮีล +'+r.amount+' 💚','me');
       }
     }
     bRender();
     if(battleState(hero,enemy)==='win')return bWin();
-    setTimeout(bEnemyTurn,760);
+    setTimeout(bEnemyTurn,820);
   }
   function bEnemyTurn(){
     const e=enemyTurn(enemy,hero);
-    const heroF=$('bHero').parentElement, enemyF=$('bEnemy').parentElement;
-    const pose='atk-'+(e.type==='heavy'&&enemy.attackStyle?enemy.attackStyle:'tackle');
-    enemyF.classList.add(pose); setTimeout(()=>enemyF.classList.remove(pose),500);
-    setTimeout(()=>{heroF.classList.add('hurt'); floatDmg(heroF,e.dmg); setTimeout(()=>heroF.classList.remove('hurt'),400);},340);
+    const heroS=$('bHeroSprite'), enemyS=$('bEnemySprite');
+    const EF=enemyFrames();
+    playAttack(enemyS, heroS, EF, {breath:EF.breath});
+    const dmgAt = EF.breath ? 480 : 440;
+    setTimeout(()=>floatDmg(heroS,e.dmg),dmgAt);
     const moveName = (e.type==='heavy' && enemy.skill) ? enemy.skill.name : 'โจมตี';
     bAdd(enemy.name+' ใช้ '+moveName+' -'+e.dmg,'foe');
     bRender();
@@ -348,11 +367,6 @@
     if(st==='lose')return bLose();
     if(st==='win')return bWin();
     busy=false; bSet(true);
-  }
-  function spawnBreath(){
-    const arena=$('battle').querySelector('.arena');
-    const b=document.createElement('div'); b.className='breath';
-    arena.appendChild(b); setTimeout(()=>b.remove(),650);
   }
   function floatDmg(fighterEl, amount, color, isHeal){
     const arena=$('battle').querySelector('.arena');
@@ -383,7 +397,7 @@
   }
   function bLose(){
     bAdd('💀 อัศวินมีมี่ล้มลง...','foe');
-    $('bHero').classList.add('defeated');
+    $('bHeroSprite').classList.add('defeated');
     setTimeout(()=>{ $('battle').classList.remove('show'); battleOpen=false; overlayEnd(false); },1100);
   }
   $('bAtk').addEventListener('click',()=>bAct('attack'));
