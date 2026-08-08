@@ -68,22 +68,17 @@
   .row .lbl{position:absolute;inset:0;font-size:10px;line-height:16px;text-align:center;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)}
   .log{height:88px;overflow-y:auto;background:rgba(0,0,0,.4);border-radius:10px;padding:6px 8px;font-size:12px;line-height:1.5;margin-bottom:10px;width:min(94vw,480px);border:1px solid rgba(124,92,255,.3);box-shadow:0 0 18px rgba(124,92,255,.15)}
   .log p{margin:1px 0}.log .me{color:#c9bbff}.log .foe{color:#ff9db0}.log .sys{color:#9fe6c9;font-style:italic}
+  /* battle header: crossed-swords icon + title */
+  .bhead{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px}
+  .bhead .swords{font-size:24px;filter:drop-shadow(0 0 8px rgba(124,92,255,.7))}
+  .bhead h2{font-size:20px;font-weight:900;margin:0;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.8);letter-spacing:.5px}
   .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:min(94vw,480px)}
-  .overlay .btn{border:none;cursor:pointer;font-size:14px;font-weight:800;color:#fff;padding:12px 4px;border-radius:14px;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 8px 20px rgba(124,92,255,.45)}
-  .overlay .btn:hover:not(:disabled){transform:translateY(-2px)}
+  .overlay .btn{border:none;cursor:pointer;font-size:15px;font-weight:800;color:#fff;padding:13px 4px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 8px 20px rgba(124,92,255,.45);transition:transform .15s ease, box-shadow .15s ease}
+  .overlay .btn .ic{font-size:18px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+  .overlay .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 26px rgba(124,92,255,.6)}
+  .overlay .btn.skl{background:linear-gradient(90deg,#5c9dff,#7c5cff)}
   .overlay .btn.heal{background:linear-gradient(90deg,#23a6d5,#39d98a)}
-  .overlay .btn:disabled{opacity:.4;cursor:not-allowed}
-  .shake{animation:shake .3s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-  /* attack lunge: hero/enemy darts toward the opponent */
-  .lunge-right{animation:lungeR .35s ease}
-  .lunge-left{animation:lungeL .35s ease}
-  @keyframes lungeR{0%{transform:translateX(0)}40%{transform:translateX(55px)}100%{transform:translateX(0)}}
-  @keyframes lungeL{0%{transform:translateX(0)}40%{transform:translateX(-55px)}100%{transform:translateX(0)}}
-  /* enemy faces left, so its lunge is mirrored */
-  .fighter.enemy.lunge-left img{animation:lungeLmirror .35s ease}
-  .fighter.enemy.lunge-right img{animation:lungeRmirror .35s ease}
-  @keyframes lungeRmirror{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(-55px)}100%{transform:scaleX(-1) translateX(0)}}
-  @keyframes lungeLmirror{0%{transform:scaleX(-1) translateX(0)}40%{transform:scaleX(-1) translateX(55px)}100%{transform:scaleX(-1) translateX(0)}}
+  .overlay .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
   /* take-damage: flash red + recoil on SPRITE only */
   .sprite.hurt{animation:hurt .4s ease}
   @keyframes hurt{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
@@ -163,7 +158,10 @@
 
   <!-- battle overlay -->
   <div class="overlay" id="battle">
-    <h2 id="bTitle"></h2>
+    <div class="bhead">
+      <span class="swords">⚔️</span>
+      <h2 id="bTitle"></h2>
+    </div>
     <div class="arena">
       <div class="fighter">
         <div class="sprite" id="bHeroSprite"><img id="bHero" src="assets/knight.png"></div>
@@ -183,9 +181,9 @@
     </div>
     <div class="log" id="bLog"></div>
     <div class="actions">
-      <button class="btn" id="bAtk">⚔️ โจมตี</button>
-      <button class="btn" id="bSkill">✨ เวทมีมี่</button>
-      <button class="btn heal" id="bHeal">💚 ฮีล</button>
+      <button class="btn atk" id="bAtk"><span class="ic">⚔️</span>โจมตี</button>
+      <button class="btn skl" id="bSkill"><span class="ic">✨</span>เวทมีมี่</button>
+      <button class="btn heal" id="bHeal"><span class="ic">❤️</span>ฮีล</button>
     </div>
   </div>
 
