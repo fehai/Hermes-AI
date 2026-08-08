@@ -193,6 +193,19 @@
     transition: transform 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.45s ease;
   }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  .mascot {
+    width: 140px;
+    height: auto;
+    margin: 0 auto 18px;
+    display: block;
+    filter: drop-shadow(0 10px 20px rgba(124, 92, 255, 0.35));
+    animation: floatMascot 4s ease-in-out infinite;
+  }
+  @keyframes floatMascot {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
 </style>
 </head>
 <body>
@@ -202,6 +215,7 @@
   <button class="theme-toggle" id="themeBtn" title="สลับธีม">🌙</button>
 
   <main class="card">
+    <img class="mascot" src="mimi-mascot.png" alt="มีมี่ mascot" />
     <span class="badge">Hermes-AI</span>
     <h1>Hello World <span class="wave">👋</span></h1>
     <p class="sub">นี่คือจุดเริ่มต้นของโปรเจกต์ Hermes-AI<br />สร้างโดย มีมี่ — ลูกน้องของลูกพี่ 💜</p>
