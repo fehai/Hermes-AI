@@ -92,11 +92,15 @@
   @keyframes hurtE{0%,100%{filter:drop-shadow(0 0 14px rgba(255,92,124,.5)) brightness(1)}
     30%{filter:drop-shadow(0 0 22px rgba(255,40,40,.95)) brightness(2.2) sepia(1) hue-rotate(-50deg) saturate(6)}}
 
-  /* forward dash: sprite darts toward opponent (actual movement, no idle) */
-  .sprite.dash-right{animation:dashR .42s ease}
-  .sprite.dash-left{animation:dashL .42s ease}
-  @keyframes dashR{0%{transform:translateX(0)}45%{transform:translateX(70px)}100%{transform:translateX(0)}}
-  @keyframes dashL{0%{transform:translateX(0)}45%{transform:translateX(-70px)}100%{transform:translateX(0)}}
+  /* forward dash: sprite glides toward opponent with smooth easing */
+  .sprite.dash-right{animation:dashR .38s cubic-bezier(.5,0,.9,.4)}
+  .sprite.dash-left{animation:dashL .38s cubic-bezier(.5,0,.9,.4)}
+  @keyframes dashR{0%{transform:translateX(0)}55%{transform:translateX(72px)}100%{transform:translateX(0)}}
+  @keyframes dashL{0%{transform:translateX(0)}55%{transform:translateX(-72px)}100%{transform:translateX(0)}}
+
+  /* wind-up: subtle recoil-back + scale (anticipation) for smoothness */
+  .sprite.wind{animation:windUp .22s ease-out}
+  @keyframes windUp{0%{transform:translateX(0) scale(1)}100%{transform:translateX(-6px) scale(.96)}}
 
   /* slash arc FX overlay (positioned on sprite) */
   .slashfx{position:absolute;z-index:3;width:150px;height:150px;left:50%;top:10px;transform:translateX(-50%);
@@ -277,32 +281,40 @@
     $('battle').classList.add('show'); bRender(); bSet(true);
   }
   function bImg(src){ return src + '?v=2'; } // cache-bust: force fresh transparent sprites
-  // --- per-character sprite frames (real frame-swap, not static lean) ---
+  // --- per-character sprite frames (real frame-swap, smooth 3-step) ---
   const FR = {
     hero:   { idle:'assets/knight.png',  wind:'assets/knight_wind.png', hit:'assets/knight_slash.png', arc:true },
-    slime:  { idle:'assets/slime.png',   hit:'assets/slime_leap.png' },
-    virus:  { idle:'assets/virus.png',   hit:'assets/virus_stab.png' },
-    dragon: { idle:'assets/dragon.png',  hit:'assets/dragon_breath.png', breath:true },
+    slime:  { idle:'assets/slime.png',   wind:'assets/slime_wind.png',  hit:'assets/slime_leap.png' },
+    virus:  { idle:'assets/virus.png',   wind:'assets/virus_wind.png',  hit:'assets/virus_stab.png' },
+    dragon: { idle:'assets/dragon.png',  wind:'assets/dragon_wind.png', hit:'assets/dragon_breath.png', breath:true },
   };
   function heroFrames(){ return FR.hero; }
   function enemyFrames(){ return FR[['slime','virus','dragon'][curMonster.stage]] || FR.slime; }
-  // Animate an attacker sprite: dash toward target, swap to attack frame, show FX, return to idle
+  // Smooth attack: wind-up (anticipation) -> dash in + strike frame -> recover to idle
   function playAttack(attackerSpriteEl, targetSpriteEl, frames, opts){
     opts = opts || {};
-    const dir = attackerSpriteEl.id==='bHeroSprite' ? 'dash-right' : 'dash-left';
     const img = attackerSpriteEl.querySelector('img');
-    attackerSpriteEl.classList.add(dir);
-    setTimeout(()=>{ attackerSpriteEl.classList.remove(dir); }, 420);
-    // swap to the "action" frame at the peak of the dash (~210ms)
+    const isHero = attackerSpriteEl.id==='bHeroSprite';
+    const dashCls = isHero ? 'dash-right' : 'dash-left';
+    // STEP 1: wind-up (anticipation) ~180ms
+    attackerSpriteEl.classList.add('wind');
+    img.src = bImg(frames.wind);
+    setTimeout(()=>{ attackerSpriteEl.classList.remove('wind'); }, 180);
+    // STEP 2: dash forward + swap to strike frame at the lunge peak (~200ms)
     setTimeout(()=>{
+      attackerSpriteEl.classList.add(dashCls);
       img.src = bImg(frames.hit);
       if(opts.arc){ spawnArc(attackerSpriteEl); }
       if(opts.breath){ spawnBreath(); }
     }, 200);
-    // target flinches
-    setTimeout(()=>{ targetSpriteEl.classList.add('hurt'); }, 360);
-    // return to idle frame after the strike
-    setTimeout(()=>{ img.src = bImg(frames.idle); targetSpriteEl.classList.remove('hurt'); }, 560);
+    // target flinches as the hit lands (~340ms)
+    setTimeout(()=>{ targetSpriteEl.classList.add('hurt'); }, 340);
+    // STEP 3: recover — remove dash, return to idle frame (~560ms)
+    setTimeout(()=>{
+      attackerSpriteEl.classList.remove(dashCls);
+      img.src = bImg(frames.idle);
+      targetSpriteEl.classList.remove('hurt');
+    }, 560);
   }
   function spawnArc(spriteEl){
     const a=document.createElement('div'); a.className='slashfx go';
